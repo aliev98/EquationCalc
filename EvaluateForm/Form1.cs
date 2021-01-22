@@ -15,6 +15,14 @@ using System.Diagnostics;
 
 namespace EvaluateForm
 {
+
+    public class newvar
+    {
+        public Control aTextbox { get; set; }
+        public Control aLabel { get; set; }
+        public Control removeLabel { get; set; }
+    }
+
     public partial class Form1 : Form
     {
         public Form1()
@@ -22,9 +30,10 @@ namespace EvaluateForm
             InitializeComponent();
         }
 
+        List<newvar> listofvars = new List<newvar>();
+
         int y = 88;
-        List<Control> textboxlist = new List<Control>();
-        //List<textboxandlabel> textboxlist2 = new List<textboxandlabel>();
+
         string name1 = "";
 
         private void Form1_Load (object sender, EventArgs e)
@@ -58,8 +67,12 @@ namespace EvaluateForm
         }
 
         Control latestTextbox;
+        Control latestLabel;
+        Control latestrlabel;
+
         private void variable_add_Click (object sender, EventArgs e)
         {
+            var aVar = new newvar();
 
             name1 = Microsoft.VisualBasic.Interaction.InputBox ("Vad ska variabeln heta?", "Title", "", 170, 70);
 
@@ -95,9 +108,9 @@ namespace EvaluateForm
                 return;
             }
 
-            for (int i = 0; i < textboxlist.Count(); i++)
+            for (int i = 0; i < listofvars.Count(); i++)
             {
-                if (name1 == textboxlist[i].Name)
+                if (name1 == listofvars[i].aTextbox.Name)
                 {
                     MessageBox.Show("This variable already excists");
                     return;
@@ -116,7 +129,10 @@ namespace EvaluateForm
             );
 
            latestTextbox = GetControlByName(this.name1);
-           textboxlist.Add (latestTextbox); // lägger till den nya textboxen i listan
+            
+            aVar.aTextbox = latestTextbox;
+
+           //textboxlist.Add (latestTextbox); // lägger till den nya textboxen i listan
 
             Controls.Add(
                 new Label()
@@ -124,26 +140,35 @@ namespace EvaluateForm
                     Location = new System.Drawing.Point(16, y),
                     Font = new System.Drawing.Font("Microsoft Sans Serif", 10.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0))),
                     Text = $"{name1}",
+                    Name = $"{name1}label",
                     Size = new System.Drawing.Size(52, 17),
                 }
                 );
             
+            latestLabel = GetControlByName($"{name1}label");
+            aVar.aLabel = latestLabel;
+
             // new stuff
             Controls.Add(
                   new Label()
                   {
                       Location = new System.Drawing.Point(130, y),
                       Font = new System.Drawing.Font("Microsoft Sans Serif", 9.0F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0))),
-                      Text = $"X",
-                      Name = $"{name1}label",
+                      Text = "X",
+                      Name = $"{name1}rlabel",
                       ForeColor = Color.Red,
                       Size = new System.Drawing.Size(52, 17),
                   }
                   ) ;
 
-            var latestlabel = GetControlByName($"{name1}label");
-            labellist.Add(latestlabel);
-            //latestlabel.Click += delegate { helloworld(name1, latestlabel.Name); };
+            latestrlabel = GetControlByName($"{name1}rlabel");
+            //labellist.Add(latestlabel);
+            aVar.removeLabel = latestrlabel;
+
+            listofvars.Add(aVar);
+
+            var currentvar = listofvars.Where (x => x.removeLabel.Name == name1 + "rlabel").FirstOrDefault();
+            latestrlabel.Click += delegate { removevar(currentvar); };
           
             //new stuff
 
@@ -152,58 +177,47 @@ namespace EvaluateForm
             this.Height += 30;
         }
 
-        List<Control> labellist = new List<Control>() { };
-        void btnPrint_Click (object sender, EventArgs e)
+
+        private void removevar (newvar chosenvar)
         {
-            var latesttextbox = GetControlByName($"{name1}");
-            latestTextbox.Dispose();
+            chosenvar.aTextbox.Dispose();
+            chosenvar.aLabel.Dispose();
+            chosenvar.removeLabel.Dispose();
+
+            var id = listofvars.IndexOf(chosenvar);
+            var hello = listofvars.ElementAt(id);
+            listofvars.Remove(hello);
+
+            y = y - 30;
+
+            this.Height -= 30;
         }
 
-        private void removevar (string textname, string labelname)
-        {
-            bool booltext = false;
 
-            var righttextbox = GetControlByName(textname);
+        //object ConvertToAny (string input)
+        //{
+        //    int i;
 
-            if (righttextbox != null) booltext = true;
+        //    if (int.TryParse(input, out i))
+        //        return i;
 
-            bool boollabel = false;
+        //    double d;
 
-            var rightlabel = GetControlByName(labelname);
+        //    if (double.TryParse(input, out d))
+        //        return d;
 
-            if (rightlabel != null) boollabel = true;
-
-            if (booltext && boollabel)
-            {
-                righttextbox.Dispose();
-            }
-        }
-
-        object ConvertToAny (string input)
-        {
-            int i;
-
-            if (int.TryParse(input, out i))
-                return i;
-
-            double d;
-
-            if (double.TryParse(input, out d))
-                return d;
-  
-            return input;
-        }
+        //    return input;
+        //}
 
         private void btnCalculate_Click (object sender, EventArgs e)
         {
-            var list1 = textboxlist;
+            var list1 = listofvars;
 
             string parameterlist = "";
 
             foreach (var item in list1)
             {
-
-                parameterlist += $"double {item.Name.ToLower()}";
+                parameterlist += $"double {item.aTextbox.Name.ToLower()}";
 
                 if (list1.IndexOf(item) != list1.Count - 1)
                 {
@@ -211,7 +225,8 @@ namespace EvaluateForm
                 }
             }
 
-            string s = txtFormula.Text;
+
+            string s = txtFormula.Text.ToLower();
 
             string[] words = s.Split('^');
 
@@ -222,35 +237,34 @@ namespace EvaluateForm
                 result = Math.Pow (double.Parse(words[0]), double.Parse(words[1]));
             }
 
-
-
             //char[] charray = s.ToCharArray();
 
-            foreach (var item in s)
-            {
-                char j = item;
+            //foreach (var item in s)
+            //{
+            //    char j = item;
 
-                if (s.IndexOf(j) == s.Length - 1)
-                {
-                    if (!double.TryParse(j.ToString(), out double output))
-                    {
-                         break;
-                    }
+            //    if (s.IndexOf(j) == s.Length - 1)
+            //    {
+            //        if (!double.TryParse(j.ToString(), out double output))
+            //        {
+            //             break;
+            //        }
 
-                   if (item != '0')
-                   {
-                        //txtFormula.Text += '.';
-                        //txtFormula.Text += '0';
-                   }
-                }
-            }
+            //       if (item != '0')
+            //       {
+            //            //txtFormula.Text += '.';
+            //            //txtFormula.Text += '0';
+            //       }
+            //    }
+            //}
 
-            var replace = result.ToString();
+            var replace = result.ToString().ToLower();
             
             for (int i = 0; i < words.Count(); i++)
             {
 
             }
+
 
             // Turn the equation into a function.
             string function_text = (result == 0) ?
@@ -258,7 +272,7 @@ namespace EvaluateForm
             "{" +                               //  (double x, double y)
             "    public static double Evaluate ( " + parameterlist + " )" +
             "    {" +          // 1 + x
-            "        return " + txtFormula.Text + ";" +
+            "        return " + s + ";" +
             "    }" +
             "}"
             :
@@ -272,8 +286,7 @@ namespace EvaluateForm
 
 
             // Compile the function.
-
-            CodeDomProvider code_provider = CodeDomProvider.CreateProvider("C#");
+            CodeDomProvider code_provider = CodeDomProvider.CreateProvider ("C#");
 
            // Generate a non-executable assembly in memory.
             CompilerParameters parameters = new CompilerParameters();
@@ -317,15 +330,16 @@ namespace EvaluateForm
 
                     foreach (var item in list1)
                     {
-                        if (item.Text.Length == 0)
+                        if (item.aTextbox.Text.Length == 0)
                         {
-                            item.Text = "0";
+                            item.aTextbox.Text = "0";
                         }
 
                         object element = 0;
+
                         Thread.CurrentThread.CurrentCulture = new CultureInfo("en-GB");
 
-                        if (double.TryParse(item.Text, out double output))
+                        if (double.TryParse (item.aTextbox.Text, out double output))
                         {
                             //element = double.Parse (item.Text);
                             element = output;
@@ -333,10 +347,10 @@ namespace EvaluateForm
 
                         else
                         {
-
+                            
                         }
 
-                        method_paramslist.Add(element);
+                        method_paramslist.Add (element);
                     }
 
                 object[] method_paramsarray = method_paramslist.ToArray();
