@@ -12,6 +12,8 @@ using System.Threading;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+//using System.Linq.Expressions;
+using org.mariuszgromada.math.mxparser;
 
 namespace EvaluateForm
 {
@@ -74,7 +76,7 @@ namespace EvaluateForm
         {
             var aVar = new newvar();
 
-            name1 = Microsoft.VisualBasic.Interaction.InputBox ("Vad ska variabeln heta?", "Title", "", 170, 70);
+            name1 = Microsoft.VisualBasic.Interaction.InputBox ("What should be the name of the variable", "Title", "", 170, 70);
 
             //var latestTextbox = GetControlByName (this.name1); // får fram den nyaste textboxen
 
@@ -168,7 +170,7 @@ namespace EvaluateForm
             listofvars.Add(aVar);
 
             var currentvar = listofvars.Where (x => x.removeLabel.Name == name1 + "rlabel").FirstOrDefault();
-            latestrlabel.Click += delegate { removevar(currentvar); };
+            latestrlabel.Click += delegate { removevar (currentvar); };
           
             //new stuff
 
@@ -209,8 +211,10 @@ namespace EvaluateForm
         //    return input;
         //}
 
+     
         private void btnCalculate_Click (object sender, EventArgs e)
         {
+
             var list1 = listofvars;
 
             string parameterlist = "";
@@ -225,43 +229,27 @@ namespace EvaluateForm
                 }
             }
 
+            if (string.IsNullOrEmpty(txtFormula.Text)) txtFormula.Text = "0";
 
             string s = txtFormula.Text.ToLower();
 
-            string[] words = s.Split('^');
 
+            string[] words = s.Split('^');
             double result = 0;
 
             if (words.Count() > 1)
             {
-                result = Math.Pow (double.Parse(words[0]), double.Parse(words[1]));
-            }
 
-            //char[] charray = s.ToCharArray();
+                string newExpression = "";
+                string oldExpression = s;
+                
+                for (int i = 0; i < listofvars.Count(); i++)
+                {
+                    newExpression = oldExpression.Replace($"{listofvars[i].aTextbox.Name}", $"{listofvars[i].aTextbox.Text}");
+                }
 
-            //foreach (var item in s)
-            //{
-            //    char j = item;
-
-            //    if (s.IndexOf(j) == s.Length - 1)
-            //    {
-            //        if (!double.TryParse(j.ToString(), out double output))
-            //        {
-            //             break;
-            //        }
-
-            //       if (item != '0')
-            //       {
-            //            //txtFormula.Text += '.';
-            //            //txtFormula.Text += '0';
-            //       }
-            //    }
-            //}
-
-            var replace = result.ToString().ToLower();
-            
-            for (int i = 0; i < words.Count(); i++)
-            {
+                var expression = new Expression(newExpression);
+                result = expression.calculate();
 
             }
 
@@ -330,10 +318,12 @@ namespace EvaluateForm
 
                     foreach (var item in list1)
                     {
-                        if (item.aTextbox.Text.Length == 0)
-                        {
-                            item.aTextbox.Text = "0";
-                        }
+                        //if (item.aTextbox.Text.Length == 0)
+                        //{
+                        //    item.aTextbox.Text = "0";
+                        //}
+
+                        if (string.IsNullOrEmpty(item.aTextbox.Text)) item.aTextbox.Text = "0";
 
                         object element = 0;
 
@@ -356,7 +346,7 @@ namespace EvaluateForm
                 object[] method_paramsarray = method_paramslist.ToArray();
 
                 // Execute the method.
-                double expression_result = (double) method_info.Invoke(null, method_paramsarray);
+                double expression_result = (double) method_info.Invoke (null, method_paramsarray);
 
                 // Display the returned result.
                 txtResult.Text = expression_result.ToString();
