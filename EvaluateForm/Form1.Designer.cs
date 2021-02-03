@@ -11,12 +11,14 @@
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        /// 
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
             {
                 components.Dispose();
             }
+
             base.Dispose(disposing);
         }
 
@@ -113,10 +115,9 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "Form1";
             this.Text = "Equation calculator";
-            this.Load += new System.EventHandler(this.Form1_Load);
-            this.ResumeLayout(false);
+            this.Load += new System.EventHandler (this.Form1_Load);
+            this.ResumeLayout (false);
             this.PerformLayout();
-
         }
 
         #endregion
