@@ -17,16 +17,10 @@ using org.mariuszgromada.math.mxparser;
 
 namespace EvaluateForm
 {
-    public class FormulaVar
-    {
-        public Control aTextbox { get; set; }
-        public Control aLabel { get; set; }
-        public Control removeLabel { get; set; }
-    }
 
-    public partial class Form1 : Form
+    public partial class Formula : Form
     {
-        public Form1()
+        public Formula()
         {
             InitializeComponent();
         }

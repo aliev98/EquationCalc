@@ -1,6 +1,6 @@
 ﻿namespace EvaluateForm
 {
-    partial class Form1
+    partial class Formula
     {
         /// <summary>
         /// Required designer variable.
