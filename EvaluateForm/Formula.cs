@@ -12,7 +12,7 @@ using System.Threading;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
-//using System.Linq.Expressions;
+// using System.Linq.Expressions;
 using org.mariuszgromada.math.mxparser;
 
 namespace EvaluateForm
@@ -76,13 +76,24 @@ namespace EvaluateForm
                 MessageBox.Show("You didn't enter variable name");
                 return;
             }
-
-            if (double.TryParse(name1, out double output))
+            else if(name1.Length > 1)
+            {
+                MessageBox.Show("Variable names can't be longer than one letter");
+                return;
+            }
+            else if (char.IsUpper(Convert.ToChar(name1)))
+            {
+                MessageBox.Show("Use lowercase on variable names");
+                return;
+            }
+            
+            else if (double.TryParse(name1, out double output))
             {
                 MessageBox.Show("Variable names can't be numbers");
                 return;
             }
 
+            //Check if name already excists
             for (int i = 0; i < VariableList.Count(); i++)
             {
                 if (name1 == VariableList[i].aTextbox.Name)
@@ -153,9 +164,18 @@ namespace EvaluateForm
             chosenvar.aLabel.Dispose();
             chosenvar.removeLabel.Dispose();
 
+
             var id = VariableList.IndexOf(chosenvar);
             var Variable = VariableList.ElementAt(id);
             VariableList.Remove(Variable);
+
+            for (int i = id; i < VariableList.Count(); i++)
+            {
+                var variable = VariableList[i];
+                variable.aTextbox.Location = new Point(variable.aTextbox.Location.X, variable.aTextbox.Location.Y - 30);
+                variable.aLabel.Location = new Point(variable.aLabel.Location.X, variable.aLabel.Location.Y - 30);
+                variable.removeLabel.Location = new Point(variable.removeLabel.Location.X, variable.removeLabel.Location.Y - 30);
+            }
 
             y = y - 30;
             this.Height -= 30;
